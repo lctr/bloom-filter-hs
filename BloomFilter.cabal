@@ -42,9 +42,9 @@ library
                      , array
                      , bytestring
 
-test-suite bloomfilter-check
+test-suite bloomfilter-test
   type:                exitcode-stdio-1.0
-  hs-source-dirs:      tests
+  hs-source-dirs:      test
   build-depends:       base
                      , random
                      , QuickCheck
