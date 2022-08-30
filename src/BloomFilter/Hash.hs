@@ -32,15 +32,15 @@ foreign import ccall unsafe "lookup3.h hashlittle2" hashLittle2
     -> Ptr Word32
     -> IO ()
 
--- | Combines the 32-bit salts consume and the computed hash values into a
--- single 64-bit value.
+-- | Combines the 32-bit salts consume and the computed hash values
+-- into a single 64-bit value.
 hashIO :: (Ptr a)      -- ^ value to hash
-  -> CSize           -- ^ number of bytes
-  -> Word64          -- ^ salt
+  -> CSize             -- ^ number of bytes
+  -> Word64            -- ^ salt
   -> IO Word64
 hashIO ptr bytes salt =
-    -- allocates space for the salt on C's stack
-    -- 'sp' is a Ptr Word64
+    -- allocates space for the salt on C's stack;
+    -- note that 'sp' is a Ptr Word64
     with (fromIntegral salt) $ \sp -> do
         -- Split the single 'Word64' into two 'Ptr Word32's to which C will
         -- write the computed hashed values
@@ -48,27 +48,28 @@ hashIO ptr bytes salt =
         let p1 = castPtr sp
         -- points to the high word of 'sp'
             p2 = castPtr sp `plusPtr` 4
-        -- pass to the C hashing functions: because all data pointers come from
-        -- the Haskell heap, we know that they will be aligned on an address
-        -- that is safe to pass to either of 'hashWord2' (which only accepts
-        -- 32-bit aligned addresses) or 'hashLittle2'
+        -- pass to the C hashing functions; because all data pointers
+        -- come from the Haskell heap, we know that they will be
+        -- aligned on an address that is safe to pass to either of
+        -- 'hashWord2' (which only accepts 32-bit aligned addresses)
+        -- or 'hashLittle2'
         go p1 p2
         -- retrieve the computed hash
         peek sp
   where
     parts = bytes `div` 4
     go p1 p2
-     -- 'hashWord2' is faster, so we call it if we know if the size of our data
-     -- is a multiple of 4
+     -- 'hashWord2' is faster, so we call it if we know if the size of
+     -- our data is a multiple of 4
      | bytes .&. 3 == 0 = hashWord2 (castPtr ptr) parts p1 p2
      | otherwise = hashLittle2 ptr bytes p1 p2
 
--- | High-level interface allowing the client to bypass fiddlng with low-level
--- details when hashing values.
+-- | High-level interface allowing the client to bypass fiddlng with
+-- low-level details when hashing values.
 --
--- The single method in this class takes a 64-bit /salt/ and a value, and
--- returns a 64-bit value corresponding to the combination of the hashed 32-bit
--- salt values and computed hashes.
+-- The single method in this class takes a 64-bit /salt/ and a value,
+-- and returns a 64-bit value corresponding to the combination of the
+-- hashed 32-bit salt values and computed hashes.
 class Hashable a where
     hashSalt :: Word64  -- ^ salt
              -> a       -- ^ value to hash
@@ -78,8 +79,8 @@ hash :: Hashable a => a -> Word64
 -- hash = hashSalt 0x106fc397cf62f64d3 -- overflows
 hash = hashSalt 503340467227682003
 
--- | Helper (boilerplate) function used in 'Hashable' instances for basic types.
---
+-- | Helper (boilerplate) function used in 'Hashable' instances for
+-- basic types.
 hashStorable :: Storable a => Word64 -> a -> Word64
 hashStorable salt k = unsafePerformIO . with k $ \ptr -> hashIO ptr (fromIntegral (sizeOf k)) salt
 
@@ -104,12 +105,12 @@ instance Storable a => Hashable [a] where
 -- HASHING TUPLE TYPES -----------------------------------------
 ----------------------------------------------------------------
 
--- | To hash tuple types, we use function composition, taking a salt in at one end
--- of of the composition pipeline and use the result of hashing each tuple
--- element as the salt for the /next/ element.
+-- | To hash tuple types, we use function composition, taking a salt
+-- in at one end of of the composition pipeline and use the result of
+-- hashing each tuple element as the salt for the /next/ element.
 --
--- The 'hash2' function encapsulates each instance of hashing a tuple's element
--- and is used with each element when hashing a tuple.
+-- The 'hash2' function encapsulates each instance of hashing a
+-- tuple's element and is used with each element when hashing a tuple.
 -- Note that 'hash2' is essentially 'flip Hashable.hashSalt'!
 hash2 :: Hashable a => a -> Word64 -> Word64
 hash2 k salt = hashSalt salt k
@@ -120,8 +121,95 @@ instance (Hashable a, Hashable b) => Hashable (a, b) where
 instance (Hashable a, Hashable b, Hashable c) => Hashable (a, b, c) where
     hashSalt salt (a, b, c) = hash2 c . hash2 b . hash2 a $ salt
 
-instance (Hashable a, Hashable b, Hashable c, Hashable d) => Hashable (a, b, c, d) where
-    hashSalt salt (a, b, c, d) = hash2 d . hash2 c . hash2 b . hash2 a $ salt
+instance (Hashable a
+    , Hashable b
+    , Hashable c
+    , Hashable d
+    ) => Hashable (a, b, c, d) where
+    hashSalt salt (a, b, c, d) = hash2 d
+        . hash2 c
+        . hash2 b
+        . hash2 a $ salt
+
+instance (Hashable a
+    , Hashable b
+    , Hashable c
+    , Hashable d
+    , Hashable e
+    ) => Hashable (a, b, c, d, e) where
+    hashSalt salt (a, b, c, d, e) = hash2 e
+        . hash2 d
+        . hash2 c
+        . hash2 b
+        . hash2 a $ salt
+
+instance (Hashable a
+  , Hashable b
+  , Hashable c
+  , Hashable d
+  , Hashable e
+  , Hashable f
+  ) => Hashable (a, b, c, d, e, f) where
+    hashSalt salt (a, b, c, d, e, f) = hash2 f
+        . hash2 e
+        . hash2 d
+        . hash2 c
+        . hash2 b
+        . hash2 a $ salt
+
+instance (Hashable a
+    , Hashable b
+    , Hashable c
+    , Hashable d
+    , Hashable e
+    , Hashable f
+    , Hashable g
+    ) => Hashable (a, b, c, d, e, f, g) where
+    hashSalt salt (a, b, c, d, e, f, g) = hash2 g
+        . hash2 f
+        . hash2 e
+        . hash2 d
+        . hash2 c
+        . hash2 b
+        . hash2 a $ salt
+
+instance (Hashable a
+    , Hashable b
+    , Hashable c
+    , Hashable d
+    , Hashable e
+    , Hashable f
+    , Hashable g
+    , Hashable h
+    ) => Hashable (a, b, c, d, e, f, g, h) where
+    hashSalt salt (a, b, c, d, e, f, g, h) = hash2 h
+        . hash2 g
+        . hash2 f
+        . hash2 e
+        . hash2 d
+        . hash2 c
+        . hash2 b
+        . hash2 a $ salt
+
+instance (Hashable a
+    , Hashable b
+    , Hashable c
+    , Hashable d
+    , Hashable e
+    , Hashable f
+    , Hashable g
+    , Hashable h
+    , Hashable i
+    ) => Hashable (a, b, c, d, e, f, g, h, i) where
+    hashSalt salt (a, b, c, d, e, f, g, h, i) = hash2 i
+        . hash2 h
+        . hash2 g
+        . hash2 f
+        . hash2 e
+        . hash2 d
+        . hash2 c
+        . hash2 b
+        . hash2 a $ salt
 
 ----------------------------------------------------------------
 -- HASHING BYTESTRINGS -----------------------------------------
