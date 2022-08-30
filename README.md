@@ -2,7 +2,7 @@
 A simple implementation of a *Bloom* filter in Haskell.
 
 A [*Bloom* filter](https://en.wikipedia.org/wiki/Bloom_filter) is a space-efficient probabilistic set-like data structure that supports *insertion* and
-*membership querying* and is used to test whether an element if a member of a
+*membership querying* and is used to test whether an element is a member of a
 set.
 
 Notably, false positives are possible in Bloom filters, but false *negatives*
@@ -12,7 +12,8 @@ This implementation is a code-along for the corresponding chapter 26 tutorial in
 World
 Haskell](http://book.realworldhaskell.org/read/advanced-library-design-building-a-bloom-filter.html),
 and as such does *not* implement the "counting Bloom filter" variant, therefore
-element removal is not supported.
+element removal is not supported. Additionally, the implementation relies on [lookup3](http://burtleburtle.net/bob/c/lookup3.c), an
+open source hash library written in C by [Bob Jenkins](http://burtleburtle.net/bob).
 
 # Algorithm
 The Bloom filter consists of a bit array and *k* hash functions, where *k* is a
