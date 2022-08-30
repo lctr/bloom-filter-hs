@@ -1,12 +1,13 @@
 module BloomFilter.Mutable where
 
 -- import Control.Monad (liftM)
-import Control.Monad.ST (ST)
-import Data.Array.MArray (getBounds, newArray, readArray, writeArray)
-import Data.Word (Word32)
-import Prelude hiding (elem, length, notElem)
+import           Control.Monad.ST     (ST)
+import           Data.Array.MArray    (getBounds, newArray, readArray,
+                                       writeArray)
+import           Data.Word            (Word32)
+import           Prelude              hiding (elem, length, notElem)
 
-import BloomFilter.Internal (MutBloom (..))
+import           BloomFilter.Internal (MutBloom (..))
 
 new :: (a -> [Word32]) -> Word32 -> ST s (MutBloom s a)
 new hash numBits = MB hash <$> newArray (0, numBits - 1) False
@@ -51,7 +52,7 @@ notElem elt fltr = not <$> elem elt fltr
 
 -- | A monadic version of 'all'.
 allM :: Monad m => (a -> m Bool) -> [a] -> m Bool
-allM p [] = return True
+allM _ [] = return True
 allM p (x : xs) = do
     ok <- p x
     if ok
