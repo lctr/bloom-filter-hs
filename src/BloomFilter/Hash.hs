@@ -74,9 +74,9 @@ class Hashable a where
              -> a       -- ^ value to hash
              -> Word64
 
--- TODO: why is the provided salt value overflowed??
 hash :: Hashable a => a -> Word64
-hash = hashSalt 0x106fc397cf62f64d3
+-- hash = hashSalt 0x106fc397cf62f64d3 -- overflows
+hash = hashSalt 503340467227682003
 
 -- | Helper (boilerplate) function used in 'Hashable' instances for basic types.
 --
