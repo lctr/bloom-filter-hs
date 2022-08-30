@@ -18,6 +18,8 @@ import           Foreign.Ptr           (Ptr, castPtr, plusPtr)
 import           Foreign.Storable      (Storable, peek, sizeOf)
 import           System.IO.Unsafe      (unsafePerformIO)
 
+-- | Foreign call to 'C' function hashing values with 32-bit aligned
+-- addresses. This function is /faster/ than @hashLittle2@.
 foreign import ccall unsafe "lookup3.h hashword2" hashWord2
     :: Ptr Word32
     -> CSize
@@ -25,6 +27,10 @@ foreign import ccall unsafe "lookup3.h hashword2" hashWord2
     -> Ptr Word32
     -> IO ()
 
+-- | Foreign call to 'C' function that hashes values of
+-- arbitrarily-sized address alignment. Since it has no restrictions
+-- on the address alignment of a value, it is slower than the function
+-- @hashWord2@.
 foreign import ccall unsafe "lookup3.h hashlittle2" hashLittle2
     :: (Ptr a)
     -> CSize
@@ -42,9 +48,9 @@ hashIO ptr bytes salt =
     -- allocates space for the salt on C's stack;
     -- note that 'sp' is a Ptr Word64
     with (fromIntegral salt) $ \sp -> do
-        -- Split the single 'Word64' into two 'Ptr Word32's to which C will
-        -- write the computed hashed values
-        -- points at the low word of 'sp'
+        -- Split the single 'Word64' into two 'Ptr Word32's to which C
+        -- will write the computed hashed values points at the low
+        -- word of 'sp'
         let p1 = castPtr sp
         -- points to the high word of 'sp'
             p2 = castPtr sp `plusPtr` 4
@@ -215,8 +221,10 @@ instance (Hashable a
 -- HASHING BYTESTRINGS -----------------------------------------
 ----------------------------------------------------------------
 
--- | 'Hashable' instances for 'ByteString's take advantage of the 'ByteString'
--- type internals, which give excellent hashing performance.
+-- | 'Hashable' instances for 'ByteString's take advantage of the
+-- 'ByteString' type internals, which give excellent hashing
+-- performance. Note that the /value/ of the 'ByteString' itself is
+-- /not stored.
 hashByteString :: Word64 -> Strict.ByteString -> IO Word64
 hashByteString salt bs =
     Strict.useAsCStringLen bs $ \(ptr, len) ->
@@ -225,12 +233,8 @@ hashByteString salt bs =
 instance Hashable Strict.ByteString where
     hashSalt salt bs = unsafePerformIO $ hashByteString salt bs
 
--- | Since lazy 'ByteString's are represented as a series of chunks, we have to
--- take those chunks' boundaries into consideration. Namely, we ensure that we
--- pass chunks that are uniformly 64KB in size to the C hashing function, so
--- that we consistently hash chunks regardless of the original chunk boundaries.
--- This is necessary since, for example, the string "foobar" may be represented
--- as @["fo", "obar"]@, @["foob", "ar"]@, etc.
+-- | Takes a lazy 'ByteString' and return a list of 'ByteString'
+-- chunks, with each chunk uniformly sized at 64KB.
 rechunk :: Lazy.ByteString -> [Strict.ByteString]
 rechunk s
   | Lazy.null s = []
@@ -239,15 +243,23 @@ rechunk s
     where repack = Strict.concat . Lazy.toChunks
           chunkSize = 64 * 1024
 
+-- | Since lazy 'ByteString's are represented as a series of chunks,
+-- we have to take those chunks' boundaries into consideration.
+-- Namely, we ensure that we pass chunks that are uniformly 64KB in
+-- size to the C hashing function, so that we consistently hash chunks
+-- regardless of the original chunk boundaries. This is necessary
+-- since, for example, the string "foobar" may be represented as
+-- @["fo", "obar"]@, @["foob", "ar"]@, etc.
 instance Hashable Lazy.ByteString where
     hashSalt salt bs = unsafePerformIO $ foldM hashByteString salt (rechunk bs)
 
--- | Combines the two values computed the Jenkins hash functions, yielding many
--- more hashes.
+-- | Combines the two values computed by the Jenkins hash functions to
+-- a greater number of more hashes.
 --
--- This is helpful since we need more than two hashes (by a potentially large
--- margin) to make effective use of a Bloom filter, but computing many distinct
--- hashes may be computationally expensive.
+-- This is helpful since we need more than two hashes (by a
+-- potentially large margin) to make effective use of a Bloom filter,
+-- but computing many distinct hashes may be computationally
+-- expensive.
 doubleHash :: Hashable a => Int -> a -> [Word32]
 doubleHash numHashes value = [ h1 + h2 * i | i <- [0..num] ]
   where
