@@ -54,3 +54,13 @@ test-suite bloomfilter-check
   ghc-options:         -fwarn-unused-binds
   main-is:             BloomCheck.hs
   other-extensions:    GeneralizedNewtypeDeriving
+
+benchmark bloomfilter-bench
+  type:                exitcode-stdio-1.0
+  main-is:             WordTest.hs
+  hs-source-dirs:      bench
+  default-language:    Haskell2010
+  ghc-options:         -O2
+  build-depends:       base
+                     , bytestring
+                     , BloomFilter
