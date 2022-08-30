@@ -56,11 +56,11 @@ hashIO ptr bytes salt =
         -- retrieve the computed hash
         peek sp
   where
-    words = bytes `div` 4
+    parts = bytes `div` 4
     go p1 p2
      -- 'hashWord2' is faster, so we call it if we know if the size of our data
      -- is a multiple of 4
-     | bytes .&. 3 == 0 = hashWord2 (castPtr ptr) words p1 p2
+     | bytes .&. 3 == 0 = hashWord2 (castPtr ptr) parts p1 p2
      | otherwise = hashLittle2 ptr bytes p1 p2
 
 -- | High-level interface allowing the client to bypass fiddlng with low-level
