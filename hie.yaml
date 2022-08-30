@@ -1,3 +1,8 @@
 cradle:
   cabal:
-   component: "test:bloomfilter-test"
+    - path: "./src"
+      component: "bloomfilter:lib:bloomfilter"
+    - path: "./test"
+      component: "test:bloomfilter-test"
+    - path: "./bench"
+      component: "bench:bloomfilter-bench"
