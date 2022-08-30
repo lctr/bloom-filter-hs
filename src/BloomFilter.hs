@@ -3,6 +3,7 @@ module BloomFilter (
   , length
   , elem
   , notElem
+  , (?>)
   , fromList
 ) where
 
@@ -26,6 +27,10 @@ elt `elem` fltr = all test (blmHash fltr elt)
 
 notElem :: a -> Bloom a -> Bool
 elt `notElem` fltr = not (elt `elem` fltr)
+
+-- | A synonym for the BloomFilter membership predicate `B.elem`.
+(?>) :: a -> Bloom a -> Bool
+(?>) = elem
 
 -- | An ergonomic way to create an /immutable/ Bloom filter from a list of hash
 -- functions, a capacity, and a list of items to store.

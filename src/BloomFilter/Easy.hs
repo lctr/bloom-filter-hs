@@ -8,9 +8,11 @@ module BloomFilter.Easy (
   , B.length
   , B.elem
   , B.notElem
+  , (?>)
 
 ) where
 
+import           BloomFilter      ((?>))
 import qualified BloomFilter      as B
 import           BloomFilter.Hash (Hashable, doubleHash)
 import           Data.List        (genericLength)
