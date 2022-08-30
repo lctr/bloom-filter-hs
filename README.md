@@ -14,3 +14,11 @@ Haskell](http://book.realworldhaskell.org/read/advanced-library-design-building-
 and as such does *not* implement the "counting Bloom filter* variant, therefore
 element removal is not supported.
 
+# Algorithm
+The Bloom filter consists of a bit array and *k* hash functions, where *k* is a
+natural number.
+**Insertion** requires computing *k* hashes for the value to be inserted, and
+then "turning on" those bits in the bit array.
+**Membership** of an item is validated by computing *k* hashes for the item, and
+then checking the corresponding bits in the bit array to confirm whether they've
+been "turned on" or not.
