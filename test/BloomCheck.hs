@@ -1,5 +1,6 @@
 module BloomCheck where
 
+import           BloomFilter.Easy     ((?>))
 import qualified BloomFilter.Easy     as B
 import           BloomFilter.Hash     (Hashable)
 import qualified Data.ByteString      as S
@@ -43,10 +44,6 @@ falsePositive = choose (epsilon, 1 - epsilon) where epsilon = 1e-6
 (=~>) :: Either a b -> (b -> Bool) -> Bool
 k =~> f = either (const True) f k
 
--- | A synonym for the BloomFilter membership predicate `B.elem`.
-(?>) :: a -> B.Bloom a -> Bool
-(?>) = B.elem
-
 -- | Tests a property against singleton Bloom filters. The first
 -- argument is ignored and only exists to simulate monomorphic
 -- properties, as required by QuickCheck. Do note that the type of the
@@ -68,11 +65,15 @@ prop_all_present _ xs = forAll falsePositive $ \errRate -> B.easyList errRate xs
 -- from a 'Word8' byte.
 instance Arbitrary L.ByteString where
     arbitrary = L.pack <$> arbitrary
-    -- coarbitrary = coarbitrary . L.unpack
+
+instance CoArbitrary L.ByteString where
+    coarbitrary = coarbitrary . L.unpack
 
 instance Arbitrary S.ByteString where
     arbitrary = S.pack <$> arbitrary
 
+instance CoArbitrary S.ByteString where
+    coarbitrary = coarbitrary . S.unpack
 
 
 -- | Indirectly tests whether 'easyList' behaves well on larger inputs
@@ -125,3 +126,5 @@ prop_suggestions_sane =
                 either (const False) sane $ B.suggestSizing cap errRate
     where maxWord32 = maxBound :: Word32
           sane (bits, hashes) = bits > 0 && bits < maxBound && hashes > 0
+
+main = handyCheck 40000 prop_suggestions_sane
