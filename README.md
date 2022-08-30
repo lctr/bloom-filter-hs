@@ -11,7 +11,7 @@ are impossible.
 This implementation is a code-along for the corresponding chapter 26 tutorial in [Real
 World
 Haskell](http://book.realworldhaskell.org/read/advanced-library-design-building-a-bloom-filter.html),
-and as such does *not* implement the "counting Bloom filter* variant, therefore
+and as such does *not* implement the "counting Bloom filter" variant, therefore
 element removal is not supported.
 
 # Algorithm
