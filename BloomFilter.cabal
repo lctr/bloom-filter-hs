@@ -20,7 +20,6 @@ extra-source-files:  CHANGELOG.md
                    . cbits/lookup3.h
 
 library
-  exposed-modules:     BloomFilter
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-prof-options:    -auto-all
@@ -29,7 +28,11 @@ library
   include-dirs:        cbits
   includes:            lookup3.h
   install-includes:    lookup3.h
-  -- other-modules:
+  exposed-modules:     BloomFilter
+                     , BloomFilter.Easy
+  other-modules:       BloomFilter.Hash
+                     , BloomFilter.Internal
+                     , BloomFilter.Mutable
   -- other-extensions:
 
   build-depends:       base ^>=4.14.1.0
