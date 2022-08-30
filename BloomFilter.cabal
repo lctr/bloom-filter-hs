@@ -51,6 +51,7 @@ test-suite bloomfilter-test
                      , BloomFilter
   default-language:    Haskell2010
   ghc-options:         -fwarn-unused-binds
+                       -main-is BloomCheck
   main-is:             BloomCheck.hs
   other-extensions:    GeneralizedNewtypeDeriving
 
@@ -60,6 +61,7 @@ benchmark bloomfilter-bench
   hs-source-dirs:      bench
   default-language:    Haskell2010
   ghc-options:         -O2
+                       -main-is WordTest
   build-depends:       base
                      , deepseq
                      , time
