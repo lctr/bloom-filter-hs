@@ -46,7 +46,6 @@ test-suite bloomfilter-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   build-depends:       base
-                     , random
                      , QuickCheck
                      , bytestring
                      , BloomFilter

@@ -6,7 +6,6 @@ import           BloomFilter.Hash     (Hashable)
 import qualified Data.ByteString      as S
 import qualified Data.ByteString.Lazy as L
 import           Data.Word            (Word32, Word8)
--- import           System.Random        (Random (..), RandomGen)
 import           Test.QuickCheck
 
 handyCheck :: Testable a => Int -> a -> IO ()
