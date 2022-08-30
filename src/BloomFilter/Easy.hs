@@ -19,14 +19,14 @@ import           Data.List        (genericLength)
 import           Data.Maybe       (mapMaybe)
 import           Data.Word        (Word32)
 
--- | An "easier" way to create a Bloom filter that does not require specifying
--- the hashing functions to be used, instead relying on the 'Hashable'
--- typeclass. Additionally, a 'false positivity rate' parameter is used (along
--- with the list of elements to insert) to calculate the necessary size of the
--- filter.
+-- | An "easier" way to create a Bloom filter that does not require
+-- specifying the hashing functions to be used, instead relying on the
+-- 'Hashable' typeclass. Additionally, a 'false positivity rate'
+-- parameter is used (along with the list of elements to insert) to
+-- calculate the necessary size of the filter.
 --
--- Note that this function will fail if the length of the input list is /too
--- long/.
+-- Note that this function will fail if the length of the input list
+-- is /too big/.
 easyList
   :: (Hashable a)
   => Double -- ^ false positive rate, between 0 and 1
@@ -38,6 +38,12 @@ easyList errRate values =
     Right (bits, hashes) -> Right filt
      where filt = B.fromList (doubleHash hashes) bits values
 
+-- | Given a max capacity and a desired false positive rate (between
+-- '0' and '1', exclusive); on failure, this returns either an error
+-- with a message, while on success it returns a pair containing the
+-- filter size -- as a 32-bit value -- and an integer corresponding to
+-- the number of hashes that will be applied to an element upon
+-- insertion or membership querying.
 suggestSizing
   :: Integer                        -- ^ expected max capacity
   -> Double                         -- ^ desired false positive rate
