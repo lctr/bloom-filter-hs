@@ -62,5 +62,7 @@ benchmark bloomfilter-bench
   default-language:    Haskell2010
   ghc-options:         -O2
   build-depends:       base
+                     , deepseq
+                     , time
                      , bytestring
                      , BloomFilter
